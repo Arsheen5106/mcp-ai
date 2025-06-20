@@ -24,7 +24,7 @@ app.post('/ask', async (req, res) => {
     const groqResponse = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: "mixtral-8x7b-32768",  // Change if needed
+        model: "llama3-70b-8192",  // Change if needed
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
         max_tokens: 100,
