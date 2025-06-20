@@ -1,8 +1,9 @@
 {
   "name": "mcp-ai-backend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Cloud API for MCP AI using Groq",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
@@ -14,4 +15,3 @@
     "express": "^4.18.2"
   }
 }
-
