@@ -1,50 +1,59 @@
-// server.js
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import axios from 'axios';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
+const GROQ_API_KEY = process.env.GROQ_API_KEY; // Set this in your environment
+
+if (!GROQ_API_KEY) {
+  console.error('Error: GROQ_API_KEY is not set in environment variables.');
+  process.exit(1);
+}
 
 app.use(cors());
-app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-  res.send('MCP AI is alive');
-});
-
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+app.use(express.json());
 
 app.post('/ask', async (req, res) => {
-  const { prompt } = req.body;
+  const prompt = req.body.prompt;
+  if (!prompt) {
+    return res.status(400).json({ error: 'Missing prompt in request body' });
+  }
 
   try {
-    const response = await axios.post(
+    const groqResponse = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'mixtral-8x7b-32768',
-        messages: [{ role: 'user', content: prompt }],
+        model: "mixtral-8x7b-32768",  // Change if needed
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 100,
       },
       {
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
-        },
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
     );
 
-    const result = response.data.choices[0].message.content;
-    res.json({ response: result });
+    // Assuming response format follows OpenAI chat completion
+    const answer = groqResponse.data.choices?.[0]?.message?.content;
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Groq request failed' });
+    if (!answer) {
+      return res.status(500).json({ error: 'No response from Groq AI' });
+    }
+
+    return res.json({ response: answer });
+  } catch (error) {
+    console.error('Groq API request failed:', error.response?.data || error.message);
+
+    const errMsg = error.response?.data?.error || error.message || 'Groq API request failed';
+
+    return res.status(error.response?.status || 500).json({ error: errMsg });
   }
 });
 
-app.listen(port, () => {
-  console.log(`✅ MCP AI is running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`✅ MCP AI is running on port ${PORT}`);
 });
