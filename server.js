@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Health check
+// Health check route
 app.get('/', (req, res) => {
   res.send('✅ MCP AI backend is running!');
 });
@@ -29,13 +29,3 @@ app.post('/ask', async (req, res) => {
       {
         model: 'mixtral-8x7b-32768',
         messages: [...history, { role: 'user', content: prompt }],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
-        },
-      }
-    );
-
-    const message = response.data.choices[0].message;
-    res.json({ response: message.content, role: message.role });
